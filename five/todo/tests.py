@@ -12,18 +12,19 @@ class TaskCreationTest(TestCase):
     """
     def test_create_new_task(self):
         data = {
-            "title": "Write unit tests",
-            "description": "Add tests for the create task view",
-            "due_date": "2024-12-31"
+            "name": "Write unit tests",
+            "description": "Add tests for the create_task view",
+            "due_date": "2024-12-31",
+            "completed": False
         }
-       
-        response = self.client.post(reverse("task_create"), data)
-        self.assertEqual(response.status_code, 302)  # Redirect to task list
-        self.assertRedirects(response, reverse("task_list"))
         
-        self.assertEqual(ToDo.objects.count(), 1)
+        response = self.client.post(reverse("create_task"), data)
         
         task = ToDo.objects.first()
-        self.assertEqual(task.title, "Write unit tests")
-        self.assertFalse(task.complete)
+
+        self.assertEqual(response.status_code, 302)  # Redirect to task list
+        self.assertRedirects(response, reverse("task_list"))
+        self.assertEqual(ToDo.objects.count(), 1)
+        self.assertEqual(task.name, "Write unit tests")
+        self.assertFalse(task.completed)
         self.assertEqual(str(task.due_date), "2024-12-31")
