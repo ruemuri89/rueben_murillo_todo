@@ -10,7 +10,7 @@ class ToDo(models.Model):
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
     due_date = models.DateField(null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos',blank=True)
  
 
     def __str__(self):
@@ -31,5 +31,5 @@ class ToDo(models.Model):
     
     def is_overdue(self):
         if self.due_date and not self.completed:
-            return timezone.now() > self.due_date
+            return timezone.now().date() > self.due_date
         return False

@@ -14,4 +14,4 @@ class ToDoAdmin(admin.ModelAdmin):
         }),
         ('Status', {
             'fields': ('completed','overdue')
-        }),
+        }),)
