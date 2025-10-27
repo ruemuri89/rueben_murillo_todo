@@ -7,9 +7,11 @@ from django.utils import timezone
 
 class ToDo(models.Model):
     name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
     due_date = models.DateField(null=True, blank=True)
-    description = models.TextField(blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos')
+ 
 
     def __str__(self):
         return self.name
@@ -20,17 +22,14 @@ class ToDo(models.Model):
         verbose_name_plural = 'To-Dos'
         
     def mark_complete(self):
-        "Mark todo as complete"
-        self_completed = True
+        self.completed = True
         self.save()
     
     def mark_incomplete(self):
-        "Mark todo as incomplete"
         self.completed = False
         self.save()
     
     def is_overdue(self):
-        "Check if todo is overdue"
         if self.due_date and not self.completed:
             return timezone.now() > self.due_date
         return False

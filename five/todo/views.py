@@ -1,42 +1,86 @@
-from django.shortcuts import render,redirect, get_object_or_404
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
 from .models import ToDo
 from .forms import ToDoForm
 
-# Create your views here.
-def task_list(request):
-    tasks = ToDo.objects.all().order_by("due_date")
-    return render(request, "todo/task_list.html", {"tasks": tasks})
+@login_required
+def todo_list(request):
+    """Display all todos for the logged-in user"""
+    todos = ToDo.objects.filter(user=request.user)
+    return render(request, 'todo/todo_list.html', {'todos': todos})
 
-def create_task(request):
+@login_required
+def todo_create(request):
+    """Create a new todo"""
     if request.method == 'POST':
         form = ToDoForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("task_list")
+            todo = form.save(commit=False)
+            todo.user = request.user
+            todo.save()
+            messages.success(request, 'Todo created successfully!')
+            return redirect('todo_list')
     else:
         form = ToDoForm()
-    return render(request, "todo/task_form.html", {"form": form})
+    
+    return render(request, 'todo/todo_form.html', {
+        'form': form,
+        'action': 'Create'
+    })
 
-def edit_task(request, pk):
-    task = get_object_or_404(ToDo, pk=pk)
+@login_required
+def todo_edit(request, pk):
+    """Edit an existing todo"""
+    todo = get_object_or_404(ToDo, pk=pk, user=request.user)
+    
     if request.method == 'POST':
-        form = ToDoForm(request.POST, instance=task)
+        form = ToDoForm(request.POST, instance=todo)
         if form.is_valid():
             form.save()
-            return redirect("task_list")
+            messages.success(request, 'Todo updated successfully!')
+            return redirect('todo_list')
     else:
-        form = ToDoForm(instance=task)
-    return render(request, "todo/task_form.html", {"form": form})
+        form = ToDoForm(instance=todo)
+    
+    return render(request, 'todo/todo_form.html', {
+        'form': form,
+        'todo': todo,
+        'action': 'Edit'
+    })
 
-def delete_task(request, pk):
-    task = get_object_or_404(ToDo, pk=pk)
+@login_required
+def todo_delete(request, pk):
+    """Delete a todo"""
+    todo = get_object_or_404(ToDo, pk=pk, user=request.user)
+    
     if request.method == 'POST':
-        task.delete()
-        return redirect("task_list")
-    return render(request, "todo/task_confirm_delete.html", {"task": task})
+        todo.delete()
+        messages.success(request, 'Todo deleted successfully!')
+        return redirect('todo_list')
+    
+    return render(request, 'todo/todo_confirm_delete.html', {'todo': todo})
 
-def toggle_task(request, pk):
-    task = get_object_or_404(ToDo, pk=pk)
-    task.completed = not task.completed
-    task.save()
-    return redirect("task_list")
+@login_required
+def todo_toggle_complete(request, pk):
+    """Toggle todo completion status"""
+    todo = get_object_or_404(ToDo, pk=pk, user=request.user)
+    
+    if todo.completed:
+        todo.mark_incomplete()
+        status = 'incomplete'
+    else:
+        todo.mark_complete()
+        status = 'complete'
+    
+    # Handle AJAX requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': status,
+            'completed': todo.completed
+        })
+    
+    messages.success(request, f'Todo marked as {status}!')
+    return redirect('todo_list')

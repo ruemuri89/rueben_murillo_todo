@@ -1,10 +1,11 @@
+# urls.py
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.task_list, name='task_list'),
-    path('create/', views.create_task, name='create_task'),
-    path('edit/<int:pk>/', views.edit_task, name='edit_task'),
-    path('delete/<int:pk>/', views.delete_task, name='delete_task'),
-    path('toggle/<int:pk>/', views.toggle_task, name='toggle_task'),
+    path('', views.todo_list, name='todo_list'),
+    path('create/', views.todo_create, name='todo_create'),
+    path('<int:pk>/edit/', views.todo_edit, name='todo_edit'),
+    path('<int:pk>/delete/', views.todo_delete, name='todo_delete'),
+    path('<int:pk>/toggle/', views.todo_toggle_complete, name='todo_toggle_complete'),
 ]

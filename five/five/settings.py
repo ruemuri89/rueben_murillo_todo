@@ -51,6 +51,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "five.urls"
+LOGIN_REDIRECT_URL = "todo_list"
+LOGOUT_REDIRECT_URL = "login"
 
 TEMPLATES = [
     {
