@@ -28,7 +28,7 @@ class TaskCreationTest(TestCase):
             "completed": False
         }
        
-        response = self.client.post(reverse("create_task"), data)
+        response = self.client.post(reverse("task_create"), data)
        
         task = ToDo.objects.first()
         self.assertEqual(response.status_code, 302)  # Redirect to task list
